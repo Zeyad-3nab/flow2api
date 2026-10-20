@@ -17,9 +17,12 @@ from src.core.config import (
 from src.services.flow_client import FlowClient
 
 
+PROXY = "http://user:pass@host:10000"
+
+
 class _FakeProxyManager:
     async def get_request_proxy_url(self):
-        return None
+        return PROXY
 
 
 class _FakeYesStyleSession:
@@ -84,6 +87,9 @@ class TeamCaptchaSolveTests(unittest.IsolatedAsyncioTestCase):
         flow = FlowClient.__new__(FlowClient)
         flow.proxy_manager = _FakeProxyManager()
         session = _FakeYesStyleSession()
+        flow._build_team_captcha_cookie_map = AsyncMock(
+            return_value={"SID": "sid-value", "OSID": "osid-value"}
+        )
         with (
             patch("src.services.flow_client.AsyncSession", lambda *a, **kw: session),
             patch("src.services.flow_client.config") as cfg,
@@ -111,10 +117,14 @@ class TeamCaptchaSolveTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(create_url.endswith("/createTask"))
         payload = create_kwargs["json"]
         self.assertEqual(payload["clientKey"], FLOW2API_TEAM_CAPTCHA_CLIENT_KEY)
+        self.assertEqual(payload["task"]["proxy"], PROXY)
         self.assertEqual(payload["softID"], "33424")
         self.assertEqual(payload["task"]["type"], FLOW2API_TEAM_CAPTCHA_TASK_TYPE)
         self.assertEqual(payload["task"]["minScore"], 0.9)
         self.assertEqual(payload["task"]["pageAction"], "IMAGE_GENERATION")
+        self.assertEqual(
+            payload["task"]["cookie"], {"SID": "sid-value", "OSID": "osid-value"}
+        )
 
         get_url, get_kwargs = session.requests[-1]
         self.assertTrue(get_url.endswith("/getTaskResult"))
@@ -156,6 +166,23 @@ class TeamCaptchaSolveTests(unittest.IsolatedAsyncioTestCase):
                 flow._resolve_third_party_captcha_method(),
                 FLOW2API_TEAM_CAPTCHA_METHOD,
             )
+
+    async def test_team_cookie_map_uses_flow_request_cookie_pairs(self):
+        flow = FlowClient.__new__(FlowClient)
+        storage = (
+            '[{"name":"OSID","value":"osid-1","domain":"flow.google.com",'
+            '"hostOnly":true,"path":"/","secure":true},'
+            '{"name":"SID","value":"sid-1","domain":".google.com","path":"/",'
+            '"secure":true}]'
+        )
+        flow._resolve_flow_frontend_cookie_storage = AsyncMock(return_value=storage)
+        cookie_map = await flow._build_team_captcha_cookie_map(7)
+        self.assertEqual(cookie_map, {"OSID": "osid-1", "SID": "sid-1"})
+
+    async def test_team_cookie_map_is_empty_without_cookies(self):
+        flow = FlowClient.__new__(FlowClient)
+        flow._resolve_flow_frontend_cookie_storage = AsyncMock(return_value="")
+        self.assertEqual(await flow._build_team_captcha_cookie_map(None), {})
 
     async def test_supported_api_method_set_includes_team(self):
         from src.api import admin as admin_mod
