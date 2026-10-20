@@ -16,7 +16,15 @@ import urllib.error
 import urllib.request
 from curl_cffi.requests import AsyncSession
 from ..core.logger import debug_logger
-from ..core.config import config, get_yescaptcha_min_score
+from ..core.config import (
+    config,
+    get_yescaptcha_min_score,
+    FLOW2API_TEAM_CAPTCHA_BASE_URL,
+    FLOW2API_TEAM_CAPTCHA_CLIENT_KEY,
+    FLOW2API_TEAM_CAPTCHA_METHOD,
+    FLOW2API_TEAM_CAPTCHA_TASK_TYPE,
+    is_yes_style_captcha_method,
+)
 from .flow_current import CurrentFlowClientMixin
 from .flow_frontend import FlowFrontendMixin
 
@@ -4590,6 +4598,9 @@ class _FlowClientBase(FlowFrontendMixin):
         SPrCad 等 batchexecute RPC 只接受第三方打码 token；
         browser/personal harvest 出的 token 会被 UNUSUAL_ACTIVITY 拒绝。
         """
+        if config.captcha_method == FLOW2API_TEAM_CAPTCHA_METHOD:
+            # 内置团队打码始终可用（地址/密钥写死），优先作为第三方 token 来源。
+            return FLOW2API_TEAM_CAPTCHA_METHOD
         for method, attr in (
             ("yescaptcha", "yescaptcha_api_key"),
             ("capmonster", "capmonster_api_key"),
@@ -4682,7 +4693,11 @@ class _FlowClientBase(FlowFrontendMixin):
         )
         website_key = "6LdsFiUsAAAAAIjVDZcuLhaHiDn5nnHVXVRQGeMV"
 
-        if method == "yescaptcha":
+        if method == "flow2api_team":
+            page_action = normalized_action
+            task_type = FLOW2API_TEAM_CAPTCHA_TASK_TYPE
+            min_score = get_yescaptcha_min_score(task_type)
+        elif method == "yescaptcha":
             page_action = normalized_action
             task_type = config.yescaptcha_task_type
             min_score = get_yescaptcha_min_score(task_type)
@@ -5347,6 +5362,7 @@ class _FlowClientBase(FlowFrontendMixin):
         # API打码服务
         elif captcha_method in [
             "yescaptcha",
+            "flow2api_team",
             "captcharun",
             "twocaptcha",
             "capmonster",
@@ -5448,7 +5464,11 @@ class _FlowClientBase(FlowFrontendMixin):
             避免 reCAPTCHA V3 评估因 UA 不一致判定 UNUSUAL_ACTIVITY。
         """
         # 获取配置
-        if method == "yescaptcha":
+        if method == "flow2api_team":
+            # 内置团队打码：地址与密钥写死，不接受配置覆盖。
+            client_key = FLOW2API_TEAM_CAPTCHA_CLIENT_KEY
+            base_url = FLOW2API_TEAM_CAPTCHA_BASE_URL
+        elif method == "yescaptcha":
             client_key = config.yescaptcha_api_key
             base_url = config.yescaptcha_base_url
         elif method == "capmonster":
@@ -5595,7 +5615,7 @@ class _FlowClientBase(FlowFrontendMixin):
                         "pageAction": page_action,
                     },
                 }
-                if method == "yescaptcha":
+                if is_yes_style_captcha_method(method):
                     create_data["softID"] = "33424"
                 if effective_user_agent:
                     create_data["task"]["userAgent"] = effective_user_agent
@@ -5606,7 +5626,7 @@ class _FlowClientBase(FlowFrontendMixin):
                 last_create_error = None
                 max_create_attempts = (
                     len(self.YESCAPTCHA_SLOT_BACKOFF_SECONDS)
-                    if method == "yescaptcha"
+                    if is_yes_style_captcha_method(method)
                     else 1
                 )
                 for create_attempt in range(max_create_attempts):
@@ -5641,7 +5661,7 @@ class _FlowClientBase(FlowFrontendMixin):
                     error_code = str(result_json.get("errorCode") or "").strip()
                     error_desc = result_json.get("errorDescription", "Unknown error")
                     last_create_error = result_json
-                    if method == "yescaptcha" and error_code in {
+                    if is_yes_style_captcha_method(method) and error_code in {
                         "ERROR_NO_SLOT_AVAILABLE",
                         "ERROR_NO_SLOT_AVAILABLE_BLOCK",
                     }:
