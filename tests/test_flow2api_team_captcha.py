@@ -1,7 +1,7 @@
-"""Flow2API 团队打码（内置 yes 协议服务）回归测试。
+"""Regression test for Flow2API team captcha solving (built-in yes-protocol service).
 
-服务地址与密钥写死在代码中，不读取任何用户配置/数据库字段；
-请求格式与 YesCaptcha 一致（createTask / getTaskResult）。
+The service URL and key are hardcoded in the code and no user config / database field is read;
+the request format is identical to YesCaptcha (createTask / getTaskResult).
 """
 
 import unittest
@@ -26,7 +26,7 @@ class _FakeProxyManager:
 
 
 class _FakeYesStyleSession:
-    """createTask -> taskId, getTaskResult -> ready（记录所有请求）。"""
+    """createTask -> taskId, getTaskResult -> ready (records all requests)."""
 
     def __init__(self):
         self.calls = 0
@@ -95,7 +95,7 @@ class TeamCaptchaSolveTests(unittest.IsolatedAsyncioTestCase):
             patch("src.services.flow_client.config") as cfg,
             patch("asyncio.sleep", new=AsyncMock()),
         ):
-            # 用户自己的 YesCaptcha 配置必须完全被忽略
+            # The user's own YesCaptcha config must be completely ignored
             cfg.yescaptcha_api_key = "user-key"
             cfg.yescaptcha_base_url = "https://api.yescaptcha.com"
             cfg.yescaptcha_task_type = "RecaptchaV3TaskProxyless"

@@ -105,7 +105,7 @@ class FlowFrontendMixin:
                     code = code if code is not None else "unknown"
                     if str(code) == "401":
                         raise RuntimeError(
-                            "Flow 登录认证失败：Google Cookie 已失效、不完整，或来自不同账号 "
+                            "Flow login authentication failed: the Google Cookie has expired, is incomplete, or belongs to a different account "
                             f"(rpc={rpc_id}, code=401)"
                         )
                     raise RuntimeError(
@@ -566,10 +566,10 @@ class FlowFrontendMixin:
             metadata["video"] = video_info
             error_message = {
                 "PUBLIC_ERROR_PROMINENT_PEOPLE_FILTER_FAILED": (
-                    "提示词或参考素材触发了人物安全过滤"
+                    "The prompt or reference material triggered the people safety filter"
                 ),
-                "PUBLIC_ERROR_UNSAFE_GENERATION": "提示词或参考素材触发了内容安全过滤",
-            }.get(error_code, f"Flow 上游拒绝视频生成：{error_code}")
+                "PUBLIC_ERROR_UNSAFE_GENERATION": "The prompt or reference material triggered the content safety filter",
+            }.get(error_code, f"Flow upstream rejected video generation: {error_code}")
             operation_body = {"name": operation_id, "metadata": metadata}
             if error_code:
                 operation_body["error"] = {
@@ -594,7 +594,7 @@ class FlowFrontendMixin:
         if not normalized:
             error_code = cls._extract_frontend_rpc_error_code(payload)
             if error_code:
-                error_message = f"Flow 上游拒绝视频生成：{error_code}"
+                error_message = f"Flow upstream rejected video generation: {error_code}"
                 for previous in operations:
                     operation_id = str(
                         (previous or {}).get("name")
@@ -653,7 +653,7 @@ class FlowFrontendMixin:
             response_host and response_host != "flow.google.com"
         ):
             raise RuntimeError(
-                "Flow 登录认证失败：Google Cookie 已失效、不完整，或登录态被重定向 "
+                "Flow login authentication failed: the Google Cookie has expired, is incomplete, or the login state was redirected "
                 f"(code={response.status_code})"
             )
         if response.status_code >= 400:
@@ -768,7 +768,7 @@ class FlowFrontendMixin:
 
     @staticmethod
     def _extract_stream_chat_at_token(bootstrap_text: str) -> str:
-        """从 bootstrap HTML 提取 WIZ_global_data.SNlM0e（XSRF at token）。"""
+        """Extract WIZ_global_data.SNlM0e (XSRF at token) from the bootstrap HTML."""
         for pattern in (
             r'"SNlM0e"\s*:\s*"((?:\\.|[^"\\])+)"',
             r"SNlM0e['\"]?\s*[:=]\s*['\"]([A-Za-z0-9_:\-.]+)['\"]",
@@ -789,7 +789,7 @@ class FlowFrontendMixin:
         recaptcha_token: str,
         session_id: str,
     ) -> str:
-        """构造 StreamChat f.req（结构复刻自新版前端真实请求）。
+        """Build the StreamChat f.req (structure replicated from the new frontend's real request).
 
         outer = [null, "<inner json>"]
         inner = [session_id, [[[[prompt]]]],
@@ -806,11 +806,11 @@ class FlowFrontendMixin:
 
     @classmethod
     def _extract_stream_chat_media_ids(cls, payloads: Any) -> List[str]:
-        """从 StreamChat 响应帧中提取 generate_image 结果的 media_id。
+        """Extract the media_id of generate_image results from StreamChat response frames.
 
-        batchexecute 帧形如 ["wrb.fr", null, "<inner json>"]，业务数据在
-        内层 JSON 字符串里，需要先 json.loads 再递归查找
-        ["media_id", [null, null, "<uuid>"]] 模式。
+        A batchexecute frame looks like ["wrb.fr", null, "<inner json>"]; the business
+        data is inside the inner JSON string, so it must be json.loads'd first and then
+        recursively searched for the ["media_id", [null, null, "<uuid>"]] pattern.
         """
         found: List[str] = []
 
@@ -858,7 +858,7 @@ class FlowFrontendMixin:
         timeout: int,
         cookie_storage: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """新版 Flow 图片生成入口：FlowCreationAgentService/StreamChat。"""
+        """New Flow image generation entry point: FlowCreationAgentService/StreamChat."""
         page_url = f"https://flow.google.com/project/{project_id}"
         bootstrap_cookie_header = (
             serialize_cookie_header_for_url(cookie_storage, page_url)

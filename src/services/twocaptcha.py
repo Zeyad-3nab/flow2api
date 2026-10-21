@@ -20,9 +20,9 @@ def _response_payload(response, client_key: str) -> Dict[str, Any]:
     try:
         payload = response.json()
     except Exception:
-        raise TwoCaptchaError("2Captcha API 返回无效 JSON") from None
+        raise TwoCaptchaError("2Captcha API returned invalid JSON") from None
     if not isinstance(payload, dict):
-        raise TwoCaptchaError("2Captcha API 返回格式无效")
+        raise TwoCaptchaError("2Captcha API returned an invalid format")
     if payload.get("errorId", 0) != 0:
         code = str(payload.get("errorCode") or "")
         if not re.fullmatch(r"ERROR_[A-Z0-9_]{1,64}", code) or client_key in code:
@@ -45,9 +45,9 @@ async def solve_recaptcha_v3(
 ) -> Dict[str, str]:
     """Return a solved token with a bounded wait and the documented polling interval."""
     if not str(client_key or "").strip():
-        raise TwoCaptchaError("2Captcha API Key 未配置")
+        raise TwoCaptchaError("2Captcha API Key is not configured")
     if not str(action or "").strip():
-        raise TwoCaptchaError("2Captcha reCAPTCHA action 不能为空")
+        raise TwoCaptchaError("2Captcha reCAPTCHA action cannot be empty")
 
     async def solve() -> Dict[str, str]:
         options = {"timeout": 30, "allow_redirects": False}
@@ -76,7 +76,7 @@ async def solve_recaptcha_v3(
                 or isinstance(task_id, bool)
                 or task_id <= 0
             ):
-                raise TwoCaptchaError("2Captcha 创建任务响应缺少有效 taskId")
+                raise TwoCaptchaError("2Captcha createTask response is missing a valid taskId")
             while True:
                 await asyncio.sleep(5)
                 response = await session.post(
@@ -88,13 +88,13 @@ async def solve_recaptcha_v3(
                 if payload.get("status") == "processing":
                     continue
                 if payload.get("status") != "ready":
-                    raise TwoCaptchaError("2Captcha 返回未知任务状态")
+                    raise TwoCaptchaError("2Captcha returned an unknown task status")
                 solution = payload.get("solution")
                 if not isinstance(solution, dict):
-                    raise TwoCaptchaError("2Captcha 返回结果缺少验证码")
+                    raise TwoCaptchaError("2Captcha result is missing the captcha token")
                 token = solution.get("gRecaptchaResponse") or solution.get("token")
                 if not isinstance(token, str) or not token.strip():
-                    raise TwoCaptchaError("2Captcha 返回结果缺少验证码")
+                    raise TwoCaptchaError("2Captcha result is missing the captcha token")
                 user_agent = solution.get("userAgent")
                 return {
                     "gRecaptchaResponse": token,
@@ -106,6 +106,6 @@ async def solve_recaptcha_v3(
     except TwoCaptchaError:
         raise
     except asyncio.TimeoutError:
-        raise TwoCaptchaError("2Captcha 获取验证码超时") from None
+        raise TwoCaptchaError("2Captcha captcha retrieval timed out") from None
     except Exception as exc:
-        raise TwoCaptchaError(f"2Captcha API 请求失败 ({type(exc).__name__})") from None
+        raise TwoCaptchaError(f"2Captcha API request failed ({type(exc).__name__})") from None

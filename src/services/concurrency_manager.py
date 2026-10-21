@@ -30,7 +30,7 @@ class ConcurrencyManager:
             self._image_limits.clear()
             self._video_limits.clear()
 
-            # 初始化时重置 in-flight，避免重启后带入脏状态
+            # Reset in-flight on initialization to avoid carrying over dirty state after a restart
             self._image_inflight.clear()
             self._video_inflight.clear()
 
@@ -129,7 +129,7 @@ class ConcurrencyManager:
     async def wait_acquire_image(
         self, token_id: int, timeout_seconds: float
     ) -> tuple[bool, int]:
-        """等待获取图片硬并发槽位，避免请求在短暂竞争下直接失败。"""
+        """Wait to acquire a hard image concurrency slot, to avoid requests failing outright under brief contention."""
         wait_started = time.monotonic()
         timeout_seconds = max(1.0, float(timeout_seconds or 1.0))
         deadline = wait_started + timeout_seconds
@@ -148,7 +148,7 @@ class ConcurrencyManager:
     async def wait_acquire_video(
         self, token_id: int, timeout_seconds: float
     ) -> tuple[bool, int]:
-        """等待获取视频硬并发槽位，避免请求在短暂竞争下直接失败。"""
+        """Wait to acquire a hard video concurrency slot, to avoid requests failing outright under brief contention."""
         wait_started = time.monotonic()
         timeout_seconds = max(1.0, float(timeout_seconds or 1.0))
         deadline = wait_started + timeout_seconds
@@ -315,7 +315,7 @@ class ConcurrencyManager:
             elif token_id in self._video_limits:
                 del self._video_limits[token_id]
 
-            # 重置时确保存在 in-flight 计数字段
+            # Ensure the in-flight counter fields exist when resetting
             self._image_inflight.setdefault(token_id, 0)
             self._video_inflight.setdefault(token_id, 0)
 

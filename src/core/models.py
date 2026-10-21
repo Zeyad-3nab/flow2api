@@ -10,12 +10,12 @@ class Token(BaseModel):
 
     id: Optional[int] = None
 
-    # 认证信息 (核心)
-    st: str  # 登录态兼容标识；新版 Flow 使用完整 Google/Flow Cookies
-    at: Optional[str] = None  # 登录态验证后的兼容标识
-    at_expires: Optional[datetime] = None  # 下次登录态校验时间
+    # Authentication info (core)
+    st: str  # Session compatibility identifier; the new Flow uses full Google/Flow Cookies
+    at: Optional[str] = None  # Compatibility identifier after session validation
+    at_expires: Optional[datetime] = None  # Next session validation time
 
-    # 基础信息
+    # Basic info
     email: str
     name: Optional[str] = ""
     remark: Optional[str] = None
@@ -24,27 +24,27 @@ class Token(BaseModel):
     last_used_at: Optional[datetime] = None
     use_count: int = 0
 
-    # VideoFX特有字段
-    credits: int = 0  # 剩余credits
+    # VideoFX-specific fields
+    credits: int = 0  # Remaining credits
     user_paygate_tier: Optional[str] = None  # PAYGATE_TIER_ONE
 
-    # 项目管理
-    current_project_id: Optional[str] = None  # 当前使用的项目UUID
-    current_project_name: Optional[str] = None  # 项目名称
+    # Project management
+    current_project_id: Optional[str] = None  # UUID of the currently used project
+    current_project_name: Optional[str] = None  # Project name
 
-    # 功能开关
+    # Feature toggles
     image_enabled: bool = True
     video_enabled: bool = True
 
-    # 并发限制
-    image_concurrency: int = -1  # -1表示无限制
-    video_concurrency: int = -1  # -1表示无限制
+    # Concurrency limits
+    image_concurrency: int = -1  # -1 means unlimited
+    video_concurrency: int = -1  # -1 means unlimited
 
-    # 打码代理（token 级，可覆盖全局浏览器打码代理）
+    # Captcha solving proxy (token-level, can override the global browser captcha proxy)
     captcha_proxy_url: Optional[str] = None
     extension_route_key: Optional[str] = None
 
-    # Google/Flow Cookie 刷新；保留旧字段名兼容已有数据
+    # Google/Flow Cookie refresh; legacy field names kept for compatibility with existing data
     protocol_mode: str = "session"  # session/protocol
     google_cookies: str = ""
     login_account: str = ""
@@ -55,19 +55,19 @@ class Token(BaseModel):
     last_st_refresh_at: Optional[datetime] = None
     last_st_refresh_result: str = ""
 
-    # 429禁用相关
-    ban_reason: Optional[str] = None  # 禁用原因: "429_rate_limit" 或 None
-    banned_at: Optional[datetime] = None  # 禁用时间
+    # 429 ban related
+    ban_reason: Optional[str] = None  # Ban reason: "429_rate_limit" or None
+    banned_at: Optional[datetime] = None  # Ban time
 
 
 class Project(BaseModel):
     """Project model for VideoFX"""
 
     id: Optional[int] = None
-    project_id: str  # VideoFX项目UUID
-    token_id: int  # 关联的Token ID
-    project_name: str  # 项目名称
-    tool_name: str = "PINHOLE"  # 工具名称,固定为PINHOLE
+    project_id: str  # VideoFX project UUID
+    token_id: int  # Associated Token ID
+    project_name: str  # Project name
+    tool_name: str = "PINHOLE"  # Tool name, fixed to PINHOLE
     is_active: bool = True
     created_at: Optional[datetime] = None
 
@@ -82,12 +82,12 @@ class TokenStats(BaseModel):
     error_count: int = 0  # Historical total errors (never reset)
     last_success_at: Optional[datetime] = None
     last_error_at: Optional[datetime] = None
-    # 今日统计
+    # Today's statistics
     today_image_count: int = 0
     today_video_count: int = 0
     today_error_count: int = 0
     today_date: Optional[str] = None
-    # 连续错误计数 (用于自动禁用判断)
+    # Consecutive error count (used for the auto-disable check)
     consecutive_error_count: int = 0
 
 
@@ -95,7 +95,7 @@ class Task(BaseModel):
     """Generation task"""
 
     id: Optional[int] = None
-    task_id: str  # Flow API返回的operation name
+    task_id: str  # operation name returned by the Flow API
     token_id: int
     model: str
     prompt: str
@@ -103,7 +103,7 @@ class Task(BaseModel):
     progress: int = 0  # 0-100
     result_urls: Optional[List[str]] = None
     error_message: Optional[str] = None
-    scene_id: Optional[str] = None  # Flow API的sceneId
+    scene_id: Optional[str] = None  # sceneId from the Flow API
     created_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
 
@@ -138,10 +138,10 @@ class ProxyConfig(BaseModel):
     """Proxy configuration"""
 
     id: int = 1
-    enabled: bool = False  # 请求代理开关
-    proxy_url: Optional[str] = None  # 请求代理地址
-    media_proxy_enabled: bool = False  # 图片上传/下载代理开关
-    media_proxy_url: Optional[str] = None  # 图片上传/下载代理地址
+    enabled: bool = False  # Request proxy toggle
+    proxy_url: Optional[str] = None  # Request proxy address
+    media_proxy_enabled: bool = False  # Image upload/download proxy toggle
+    media_proxy_url: Optional[str] = None  # Image upload/download proxy address
 
 
 class GenerationConfig(BaseModel):
@@ -150,7 +150,7 @@ class GenerationConfig(BaseModel):
     id: int = 1
     image_timeout: int = 300  # seconds
     video_timeout: int = 1500  # seconds
-    max_retries: int = 3  # 请求最大重试次数
+    max_retries: int = 3  # Maximum number of request retries
 
 
 class CallLogicConfig(BaseModel):
@@ -210,17 +210,17 @@ class CaptchaConfig(BaseModel):
     remote_browser_timeout: int = 60
     website_key: str = "6LdsFiUsAAAAAIjVDZcuLhaHiDn5nnHVXVRQGeMV"
     page_action: str = "IMAGE_GENERATION"
-    browser_proxy_enabled: bool = False  # 浏览器打码是否启用代理
-    browser_proxy_url: Optional[str] = None  # 浏览器打码代理URL
-    browser_count: int = 1  # 浏览器打码实例数量
+    browser_proxy_enabled: bool = False  # Whether browser captcha solving uses a proxy
+    browser_proxy_url: Optional[str] = None  # Browser captcha solving proxy URL
+    browser_count: int = 1  # Number of browser captcha-solving instances
     personal_project_pool_size: int = (
-        4  # 单个 Token 默认维护的项目池数量（仅影响项目轮换）
+        4  # Default number of projects maintained per Token (only affects project rotation)
     )
-    personal_max_resident_tabs: int = 5  # 内置浏览器单实例共享打码标签页数量上限
+    personal_max_resident_tabs: int = 5  # Upper limit of shared captcha-solving tabs per built-in browser instance
     browser_personal_fresh_restart_every_n_solves: int = (
-        10  # 成功打码多少次后清理并重启浏览器，0表示禁用
+        10  # After how many successful solves the browser is cleaned up and restarted; 0 disables it
     )
-    personal_idle_tab_ttl_seconds: int = 600  # 内置浏览器标签页空闲超时(秒)
+    personal_idle_tab_ttl_seconds: int = 600  # Idle timeout (seconds) for built-in browser tabs
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -229,8 +229,8 @@ class PluginConfig(BaseModel):
     """Plugin connection configuration"""
 
     id: int = 1
-    connection_token: str = ""  # 插件连接token
-    auto_enable_on_update: bool = True  # 更新token时自动启用（默认开启）
+    connection_token: str = ""  # Plugin connection token
+    auto_enable_on_update: bool = True  # Automatically enable the token on update (on by default)
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -258,7 +258,7 @@ class ImageConfig(BaseModel):
     aspectRatio: Optional[str] = None  # "16:9", "9:16", "1:1", "4:3", "3:4"
     imageSize: Optional[str] = None  # "2k", "4k"
 
-    # 兼容 OpenAI/NewAPI 等上游可能透传的 size/quality 或 snake_case 字段
+    # Compatible with size/quality or snake_case fields that upstreams like OpenAI/NewAPI may pass through
     model_config = ConfigDict(extra="allow")
 
 

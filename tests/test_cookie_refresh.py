@@ -117,7 +117,7 @@ class ProtocolCookieRefreshTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(result["success"])
 
     async def test_wrong_account_is_reported_instead_of_failing(self):
-        """账号不匹配时不再报错，而是把 Flow 页面的真实邮箱回传，由调用方自动更正。"""
+        """On an account mismatch, no error is raised; the real email from the Flow page is returned so the caller can auto-correct it."""
         result, _, _ = await self.call_login(
             page=PAGE.replace(EMAIL, "other@example.com")
         )
@@ -406,7 +406,7 @@ class TokenCookieRefreshTests(unittest.IsolatedAsyncioTestCase):
         )
 
     async def test_identity_mismatch_is_adopted_from_flow_page(self):
-        """Cookie 属于另一个账号时，刷新应以 Flow 页面为准自动更正邮箱。"""
+        """When the Cookie belongs to another account, the refresh should treat the Flow page as authoritative and auto-correct the email."""
         self.login_mock.return_value["email"] = "other@example.com"
         token = await self.db.get_token(self.token_id)
         self.assertTrue(await self.manager._try_protocol_refresh_st(self.token_id, token))
@@ -431,7 +431,7 @@ class TokenCookieRefreshTests(unittest.IsolatedAsyncioTestCase):
             await self.manager._try_protocol_refresh_st(self.token_id, token)
         )
         latest = await self.db.get_token(self.token_id)
-        # 不覆盖本地账号邮箱，也不保存别家账号的 Cookie
+        # Does not overwrite the local account email, nor save another account's Cookie
         self.assertEqual(latest.email, EMAIL)
         self.assertEqual(latest.google_cookies, COOKIES)
         self.assertIn("已被 Token", latest.last_st_refresh_result)
@@ -693,10 +693,10 @@ class RefreshIntervalDefaultsTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(manager._normalize_refresh_interval(None), 30)
         token = await self.db.get_token(token_id)
         self.assertEqual(token.refresh_interval_minutes, 30)
-        # 29 分钟前校验过 -> 还未到期
+        # Validated 29 minutes ago -> not yet due
         token.last_st_refresh_at = datetime.now(timezone.utc) - timedelta(minutes=29)
         self.assertFalse(manager.needs_at_refresh(token))
-        # 31 分钟前校验过 -> 到期
+        # Validated 31 minutes ago -> due
         token.last_st_refresh_at = datetime.now(timezone.utc) - timedelta(minutes=31)
         self.assertTrue(manager.needs_at_refresh(token))
 

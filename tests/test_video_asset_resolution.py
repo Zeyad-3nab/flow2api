@@ -35,7 +35,7 @@ class VideoAssetResolutionTests(unittest.IsolatedAsyncioTestCase):
         self.handler.flow_client.get_media_url_redirect = AsyncMock(return_value=VIDEO_URL)
 
     async def test_resolves_media_by_generation_id_not_media_name(self):
-        """as29s 按生成操作 id 索引；传 mediaName 会返回 code=[5]。"""
+        """as29s indexes by the generation operation id; passing mediaName returns code=[5]."""
         resolved = await self.handler._resolve_video_asset(MagicMock(), _operation())
 
         self.handler.flow_client.get_media_url_redirect.assert_awaited_once()

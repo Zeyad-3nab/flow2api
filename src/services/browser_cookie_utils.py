@@ -482,11 +482,11 @@ def validate_flow_cookie_storage(raw_cookie: Any) -> str:
     names = {name for name, _ in pairs}
     missing: List[str] = []
     if not names.intersection(FLOW_SESSION_COOKIE_NAMES):
-        missing.append("flow.google.com 会话 Cookie（OSID 或 __Secure-OSID）")
+        missing.append("flow.google.com session Cookie (OSID or __Secure-OSID)")
     if not names.intersection(GOOGLE_ACCOUNT_COOKIE_NAMES):
-        missing.append(".google.com 账号 Cookie（SID/HSID/SSID/APISID/SAPISID）")
+        missing.append(".google.com account Cookie (SID/HSID/SSID/APISID/SAPISID)")
     if missing:
-        raise ValueError("Google Cookies 不完整，缺少" + "、".join(missing))
+        raise ValueError("Google Cookies are incomplete, missing " + ", ".join(missing))
     return "; ".join(f"{name}={value}" for name, value in pairs)
 
 
