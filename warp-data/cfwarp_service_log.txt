@@ -9840,3 +9840,8 @@ Caused by:
 2026-10-25T08:50:05.106Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=128.908µs
 2026-10-25T08:50:08.107Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=68.879µs
 2026-10-25T08:50:11.107Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=92.947µs
+2026-10-25T08:50:14.104Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=294.674µs
+2026-10-25T08:50:17.104Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=36.029µs
+2026-10-25T08:50:17.124Z DEBUG actor_connectivity::connectivity: Routes changed: 3 in the last 30 seconds
+2026-10-25T08:50:17.848Z DEBUG dns_proxy::proxy: DNS proxy health status: Healthy
+2026-10-25T08:50:20.105Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=45.521µs
