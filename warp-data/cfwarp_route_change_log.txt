@@ -4250,3 +4250,8 @@ NewNeighbour; Destination: 172.18.0.1;
 2026-10-25T08:49:33.591Z DEBUG route-change: Routes changed:
 NewNeighbour; Destination: 172.18.0.1; 
 NewNeighbour; Destination: 172.18.0.1; 
+2026-10-25T08:50:00.981Z DEBUG route-change: Routes changed:
+NewNeighbour; Destination: 172.18.0.1; 
+2026-10-25T08:50:06.613Z DEBUG route-change: Routes changed:
+NewNeighbour; Destination: 172.18.0.1; 
+NewNeighbour; Destination: 172.18.0.1; 

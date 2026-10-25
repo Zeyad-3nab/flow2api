@@ -9837,3 +9837,6 @@ Caused by:
 2026-10-25T08:49:56.107Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=57.588µs
 2026-10-25T08:49:59.106Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=45.204µs
 2026-10-25T08:50:02.106Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=45.844µs
+2026-10-25T08:50:05.106Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=128.908µs
+2026-10-25T08:50:08.107Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=68.879µs
+2026-10-25T08:50:11.107Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=92.947µs
