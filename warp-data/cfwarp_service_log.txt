@@ -9845,3 +9845,6 @@ Caused by:
 2026-10-25T08:50:17.124Z DEBUG actor_connectivity::connectivity: Routes changed: 3 in the last 30 seconds
 2026-10-25T08:50:17.848Z DEBUG dns_proxy::proxy: DNS proxy health status: Healthy
 2026-10-25T08:50:20.105Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=45.521µs
+2026-10-25T08:50:23.104Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=174.984µs
+2026-10-25T08:50:26.104Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=81.526µs
+2026-10-25T08:50:29.105Z DEBUG utilities::tokio::select_watcher: Exiting: [connection actor] arm="message" elapsed=22.12µs
